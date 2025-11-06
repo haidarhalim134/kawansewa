@@ -3,6 +3,8 @@ import { clearSessionCookie } from "@/lib/cookies";
 
 
 export async function POST() {
-    clearSessionCookie();
-    return NextResponse.redirect(new URL("/login", process.env.APP_URL ?? "http://localhost:3000"));
+    await clearSessionCookie();
+    // Return success response instead of redirect
+    // The client will handle the redirect
+    return NextResponse.json({ success: true }, { status: 200 });
 }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import bcrypt from "bcrypt";
+import bcrypt  from "bcrypt";
 import { db, users } from "@/db";
 import { eq } from "drizzle-orm";
 
