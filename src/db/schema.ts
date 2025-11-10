@@ -17,6 +17,7 @@ export const users = pgTable("users", {
     passwordHash: text("password_hash").notNull(),
     name: text("name"),
     location: varchar("location", { length: 255 }),
+    profileImageUrl: varchar("profile_image_url", { length: 1024 }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
