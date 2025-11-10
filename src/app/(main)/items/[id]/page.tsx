@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { items, itemImages, users, reviews, rentals } from "@/db/schema";
+import { items, itemImages, users, reviews, rentals, itemFavorites } from "@/db/schema";
 import { eq, and, avg, count, ne } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Star, Calendar, ShieldCheck } from "lucide-react";
 import { ItemCard } from "@/components/ItemCard";
 import { ImageGallery } from "@/components/ImageGallery";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { getSession } from "@/lib/cookies";
 
 interface ItemDetailPageProps {
     params: Promise<{ id: string }>;
@@ -66,6 +68,26 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
         ? parseFloat(ratingData[0].avgRating)
         : 0;
     const totalReviews = ratingData[0]?.totalReviews || 0;
+
+    // Check if item is favorited by current user
+    const session = await getSession();
+    let isFavorited = false;
+
+    if (session) {
+        const userId = parseInt(session.userId);
+        const favoriteCheck = await db
+            .select()
+            .from(itemFavorites)
+            .where(
+                and(
+                    eq(itemFavorites.userId, userId),
+                    eq(itemFavorites.itemId, itemId)
+                )
+            )
+            .limit(1);
+
+        isFavorited = favoriteCheck.length > 0;
+    }
 
     // Fetch other items by same owner
     const ownerItems = await db
@@ -126,11 +148,19 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
 
                     {/* Right Side - Item Details */}
                     <div className="space-y-6">
-                        {/* Item Name & Price */}
+                        {/* Item Name & Favorite */}
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                {item.name}
-                            </h1>
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                                <h1 className="text-3xl font-bold text-gray-900 flex-1">
+                                    {item.name}
+                                </h1>
+                                {session && (
+                                    <FavoriteButton
+                                        itemId={itemId}
+                                        initialIsFavorited={isFavorited}
+                                    />
+                                )}
+                            </div>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-1">
                                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
