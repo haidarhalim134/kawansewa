@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db"; // adjust the import path
-import { items, itemImages } from "@/db/schema";
-import { ilike, or, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { items, itemImages, rentals, reviews } from "@/db/schema";
+import { ilike, or, eq, avg } from "drizzle-orm";
 
 export async function GET(req: Request) {
   try {
@@ -15,34 +15,40 @@ export async function GET(req: Request) {
       );
     }
 
-    const matchedItems = await db
-      .select()
+    const matchedItemsRows = await db
+      .select({
+        id: items.id,
+        name: items.name,
+        detail: items.detail,
+        pricePerDay: items.pricePerDay,
+        avgRating: avg(reviews.star).as("avgRating"),
+      })
       .from(items)
+      .leftJoin(rentals, eq(items.id, rentals.itemId))
+      .leftJoin(reviews, eq(rentals.id, reviews.rentalId))
       .where(
-        or(
-          ilike(items.name, `%${term}%`),
-          ilike(items.detail, `%${term}%`)
-        )
-      );
+        or(ilike(items.name, `%${term}%`), ilike(items.detail, `%${term}%`))
+      )
+      .groupBy(items.id, items.name, items.detail, items.pricePerDay);
 
-    if (matchedItems.length === 0) {
+    if (matchedItemsRows.length === 0) {
       return NextResponse.json([]);
     }
 
-    const itemIds = matchedItems.map((item) => item.id);
+    const itemIds = matchedItemsRows.map((item) => item.id);
 
     const images = await db
       .select()
       .from(itemImages)
-      .where(
-        or(...itemIds.map((id) => eq(itemImages.itemId, id)))
-      );
+      .where(or(...itemIds.map((id) => eq(itemImages.itemId, id))));
 
-    const results = matchedItems.map((item) => ({
+    const results = matchedItemsRows.map((item) => ({
       ...item,
+      rating: item.avgRating ? Number(item.avgRating) : null,
       images: images
         .filter((img) => img.itemId === item.id)
-        .sort((a, b) => a.imageOrder - b.imageOrder),
+        .sort((a, b) => a.imageOrder - b.imageOrder)
+        .map((img) => ({ url: img.imageUrl, order: img.imageOrder })),
     }));
 
     return NextResponse.json(results);
