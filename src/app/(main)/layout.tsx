@@ -34,14 +34,15 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                     {/* Search Bar (Center) */}
                     {session && (
                         <div className="flex-1 max-w-md mx-4">
-                            <div className="relative">
+                            <form action="/items" method="GET" className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="search"
+                                    name="q"
                                     placeholder="Search cameras, lenses..."
                                     className="pl-10 w-full"
                                 />
-                            </div>
+                            </form>
                         </div>
                     )}
 
