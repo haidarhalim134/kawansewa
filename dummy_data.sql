@@ -246,6 +246,18 @@ INSERT INTO item_favorites (user_id, item_id) VALUES
 (10, 8), (10, 14), (10, 24), (10, 37), (10, 47);
 
 -- =====================================================
+-- 6. INSERT VOUCHERS
+-- =====================================================
+
+INSERT INTO vouchers (code, discount_amount) VALUES
+('WELCOME10', 10000),    -- Rp 10,000 discount for new users
+('SAVE20K', 20000),       -- Rp 20,000 discount
+('STUDENT50', 50000),     -- Rp 50,000 discount for students
+('WEEKEND30', 30000),     -- Rp 30,000 weekend special
+('FIRSTRENT', 25000),     -- Rp 25,000 first rental discount
+('MEGA100', 100000);      -- Rp 100,000 mega discount
+
+-- =====================================================
 -- END OF DUMMY DATA
 -- =====================================================
 
