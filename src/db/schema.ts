@@ -46,6 +46,7 @@ export const rentals = pgTable("rentals", {
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),
     voucherId: integer("voucher_id").references(() => vouchers.id, { onDelete: "set null" }),
+    totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(), // soalnya harga item bisa berubah untuk transaksi yang sudah selesai
     startDate: date("start_date").notNull(),
     endDate: date("end_date").notNull(),
 });
