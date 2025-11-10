@@ -22,6 +22,13 @@
       "when": 1762787093017,
       "tag": "0002_swift_carlie_cooper",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762789542851,
+      "tag": "0003_striped_mongu",
+      "breakpoints": true
     }
   ]
 }
