@@ -1,0 +1,1 @@
+ALTER TABLE "rentals" RENAME COLUMN "price_per_day" TO "total_price";
