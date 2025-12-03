@@ -7,10 +7,8 @@ import { requireUser } from "@/lib/cookies";
 // GET /api/items
 export async function GET() {
   try {
-    // (Optional) require logged-in user
     const user = await requireUser();
 
-    // Fetch all items with owner info, images, and average rating
     const allItems = await db
       .select({
         id: items.id,
@@ -22,7 +20,7 @@ export async function GET() {
         ownerProfileImageUrl: users.profileImageUrl,
         imageUrl: itemImages.imageUrl,
         imageOrder: itemImages.imageOrder,
-        avgRating: avg(reviews.star).as("avgRating"), // average rating
+        avgRating: avg(reviews.star).as("avgRating"), 
       })
       .from(items)
       .leftJoin(users, eq(items.ownerId, users.id))

@@ -18,6 +18,7 @@ export const users = pgTable("users", {
     name: text("name"),
     location: varchar("location", { length: 255 }),
     profileImageUrl: varchar("profile_image_url", { length: 1024 }),
+    identificationImageUrl: varchar("identification_image_url", { length: 1024 }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });

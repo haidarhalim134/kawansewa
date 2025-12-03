@@ -8,15 +8,13 @@ type CreateItemBody = {
   name: string;
   detail?: string;
   pricePerDay: number;
-  imageUrls?: string[]; // list of image URLs
+  imageUrls?: string[]; 
 };
 
 export async function POST(req: Request) {
   try {
-    // ✅ Get the logged-in user
     const user = await requireUser();
 
-    // ✅ Parse request body
     const body = (await req.json()) as CreateItemBody;
     const { name, detail, pricePerDay, imageUrls = [] } = body;
 
@@ -27,7 +25,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Create the item and its images inside a transaction
     const result = await db.transaction(async (tx) => {
       const [newItem] = await tx
         .insert(items)
