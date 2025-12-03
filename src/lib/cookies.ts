@@ -24,7 +24,7 @@ export async function setSessionCookie(
         .setExpirationTime(`${maxAgeSeconds}s`)
         .sign(secret);
 
-    const cookieStore = await cookies(); // ✅ await here
+    const cookieStore = await cookies();
 
     cookieStore.set(cookieName, jwt, {
         httpOnly: true,
@@ -38,7 +38,7 @@ export async function setSessionCookie(
 }
 
 export async function clearSessionCookie() {
-    const cookieStore = await cookies(); // ✅ await here
+    const cookieStore = await cookies();
 
     cookieStore.set(cookieName, "", {
         httpOnly: true,
