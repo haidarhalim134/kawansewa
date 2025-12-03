@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db"; 
+import { db } from "@/db";
 import { rentals, items, vouchers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/cookies";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { itemId, voucherCode, startDate, endDate } = body;
+    const { itemId, voucherCode, startDate, endDate, totalPrice: clientTotalPrice, paymentMethod } = body;
 
     if (!itemId || !startDate || !endDate) {
       return NextResponse.json(
@@ -23,6 +23,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Item not found." }, { status: 404 });
     }
 
+    // Get authenticated user
+    const renterId = (await requireUser()).id;
+
+    // Prevent renting own item
+    if (item.ownerId === renterId) {
+      return NextResponse.json(
+        { error: "You cannot rent your own item." },
+        { status: 400 }
+      );
+    }
+
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
@@ -36,7 +47,7 @@ export async function POST(req: Request) {
     let voucherId: number | null = null;
     if (voucherCode) {
       const voucher = await db.query.vouchers.findFirst({
-        where: eq(vouchers.code, voucherCode),
+        where: eq(vouchers.code, voucherCode.toUpperCase()),
       });
       if (voucher) {
         voucherId = voucher.id;
@@ -44,8 +55,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // TODO: Replace with actual authenticated user
-    const renterId = (await requireUser()).id
+    // Verify client-side total matches server-side calculation
+    if (clientTotalPrice !== undefined && Math.abs(clientTotalPrice - totalPrice) > 0.01) {
+      return NextResponse.json(
+        { error: "Price mismatch. Please refresh and try again." },
+        { status: 400 }
+      );
+    }
 
     // Insert rental
     const [newRental] = await db
@@ -54,13 +70,20 @@ export async function POST(req: Request) {
         itemId,
         renterId,
         voucherId,
-        totalPrice,
-        startDate: start,
-        endDate: end,
+        totalPrice: totalPrice.toString(),
+        startDate: startDate, // Use original string format
+        endDate: endDate, // Use original string format
       })
       .returning();
 
-    return NextResponse.json({ rental: newRental }, { status: 201 });
+    return NextResponse.json(
+      {
+        rental: newRental,
+        message: "Rental created successfully",
+        paymentMethod: paymentMethod || "not_specified"
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating rental:", error);
     return NextResponse.json(
