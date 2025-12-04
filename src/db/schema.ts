@@ -9,6 +9,7 @@ import {
     timestamp,
     primaryKey,
     uniqueIndex,
+    pgEnum,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -23,14 +24,22 @@ export const users = pgTable("users", {
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+export const itemStatusEnum = pgEnum("item_status", [
+    "available",
+    "unavailable",
+    "pending_rent",
+]);
+
 export const items = pgTable("items", {
-    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     ownerId: integer("owner_id")
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
     detail: text("detail"),
     pricePerDay: numeric("price_per_day", { precision: 10, scale: 2 }).notNull(),
+
+    status: itemStatusEnum("status").notNull().default("available"),
 });
 
 export const vouchers = pgTable("vouchers", {
@@ -39,18 +48,31 @@ export const vouchers = pgTable("vouchers", {
     discountAmount: numeric("discount_amount", { precision: 10, scale: 2 }).notNull(),
 });
 
+export const rentalStatusEnum = pgEnum("rental_status", [
+    "pending",
+    "approved",
+    "rejected",
+    "active",
+    "completed",
+    "canceled",
+]);
+
 export const rentals = pgTable("rentals", {
-    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     itemId: integer("item_id")
         .notNull()
         .references(() => items.id, { onDelete: "cascade" }),
     renterId: integer("renter_id")
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),
-    voucherId: integer("voucher_id").references(() => vouchers.id, { onDelete: "set null" }),
-    totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(), // soalnya harga item bisa berubah untuk transaksi yang sudah selesai
+    voucherId: integer("voucher_id")
+        .references(() => vouchers.id, { onDelete: "set null" }),
+
+    totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
     startDate: date("start_date").notNull(),
     endDate: date("end_date").notNull(),
+
+    status: rentalStatusEnum("status").notNull().default("pending"),
 });
 
 export const reviews = pgTable("reviews", {
