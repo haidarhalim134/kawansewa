@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { rentals, items, vouchers } from "@/db/schema";
+import { rentals, items, vouchers, userStatus } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
 
@@ -24,12 +24,20 @@ export async function POST(req: Request) {
     }
 
     // Get authenticated user
-    const renterId = (await requireUser()).id;
+    const renter = (await requireUser())
+    const renterId = renter.id;
 
     // Prevent renting own item
     if (item.ownerId === renterId) {
       return NextResponse.json(
         { error: "You cannot rent your own item." },
+        { status: 400 }
+      );
+    }
+
+    if (renter.status != userStatus.enumValues[2]) {
+      return NextResponse.json(
+        { error: "You are not verified." },
         { status: 400 }
       );
     }

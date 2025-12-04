@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db"; // adjust if your drizzle db instance lives elsewhere
-import { items, itemImages } from "@/db/schema";
+import { items, itemImages, userStatus } from "@/db/schema";
 import { requireUser } from "@/lib/cookies";
 import { eq } from "drizzle-orm";
 
@@ -21,6 +21,13 @@ export async function POST(req: Request) {
     if (!name || !pricePerDay) {
       return NextResponse.json(
         { error: "Missing required fields: name or pricePerDay" },
+        { status: 400 }
+      );
+    }
+
+    if (user.status != userStatus.enumValues[2]) {
+      return NextResponse.json(
+        { error: "You are not verified." },
         { status: 400 }
       );
     }

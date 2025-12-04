@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireUser } from "@/lib/cookies";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, userStatus } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 // untested
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   // Update database
   await db
     .update(users)
-    .set({ identificationImageUrl: publicUrl })
+    .set({ identificationImageUrl: publicUrl, status: userStatus.enumValues[1] })
     .where(eq(users.id, user.id));
 
   return NextResponse.json({
