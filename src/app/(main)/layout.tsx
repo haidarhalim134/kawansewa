@@ -13,7 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/app/actions/auth";
-import { Camera, Search, Bell, User, LogOut, Settings, Handshake } from "lucide-react";
+import { Search, Bell, User, LogOut, Settings, Handshake, Plus } from "lucide-react";
 
 
 export default async function MainLayout({ children }: { children: ReactNode }) {
@@ -77,6 +77,13 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                                                 </p>
                                             </div>
                                         </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/partner" className="cursor-pointer">
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Partner Hub
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild>
                                             <Link href="/profile" className="cursor-pointer">

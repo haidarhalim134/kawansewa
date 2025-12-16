@@ -7,7 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, MapPin, Calendar, Edit } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Mail, MapPin, Calendar, Edit, Shield, Upload, CheckCircle, Clock, XCircle } from "lucide-react";
+import IdentificationUpload from "@/components/IdentificationUpload";
 
 export default async function ProfilePage() {
     const session = await getSession();
@@ -36,6 +38,33 @@ export default async function ProfilePage() {
             month: "long",
             day: "numeric",
         }).format(new Date(date));
+    };
+
+    // Get verification status badge
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case "verified":
+                return (
+                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Verified
+                    </Badge>
+                );
+            case "pending_verification":
+                return (
+                    <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Pending Verification
+                    </Badge>
+                );
+            default:
+                return (
+                    <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Unverified
+                    </Badge>
+                );
+        }
     };
 
     return (
@@ -71,7 +100,10 @@ export default async function ProfilePage() {
                             <h2 className="text-2xl font-bold text-gray-900">
                                 {userData.name || "No name set"}
                             </h2>
-                            <p className="text-gray-600">Member since {formatDate(userData.createdAt)}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <p className="text-gray-600">Member since {formatDate(userData.createdAt)}</p>
+                                {getStatusBadge(userData.status)}
+                            </div>
                         </div>
                     </div>
 
@@ -142,6 +174,77 @@ export default async function ProfilePage() {
                             </div>
                         </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Identity Verification Card */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-blue-600" />
+                        <CardTitle>Identity Verification</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Verify your identity to unlock full platform features and build trust with other users
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {/* Current Status */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h4 className="font-semibold text-gray-900">Verification Status</h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    {userData.status === "verified" && "Your identity has been verified!"}
+                                    {userData.status === "pending_verification" && "Your identification is under review"}
+                                    {userData.status === "unverified" && "Upload your identification to get verified"}
+                                </p>
+                            </div>
+                            {getStatusBadge(userData.status)}
+                        </div>
+                    </div>
+
+                    {/* Upload Section */}
+                    {userData.status !== "verified" && (
+                        <div className="space-y-3">
+                            {userData.identificationImageUrl && (
+                                <div className="border rounded-lg p-4 bg-blue-50">
+                                    <p className="text-sm font-medium text-blue-900 mb-2">Current Identification</p>
+                                    <img
+                                        src={userData.identificationImageUrl}
+                                        alt="Identification"
+                                        className="max-w-full h-auto rounded-lg border"
+                                    />
+                                </div>
+                            )}
+
+                            <IdentificationUpload
+                                currentImageUrl={userData.identificationImageUrl || undefined}
+                                status={userData.status}
+                            />
+
+                            <div className="text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h5 className="font-semibold text-blue-900 mb-2">📋 Requirements</h5>
+                                <ul className="space-y-1 list-disc list-inside">
+                                    <li>Upload a clear photo of your government-issued ID</li>
+                                    <li>Accepted documents: Passport, Driver's License, National ID, Student ID</li>
+                                    <li>Ensure all text is clearly visible</li>
+                                    <li>Verification typically takes 24-48 hours</li>
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {userData.status === "verified" && userData.identificationImageUrl && (
+                        <div className="border rounded-lg p-4 bg-green-50">
+                            <p className="text-sm font-medium text-green-900 mb-2">✓ Verified Identification</p>
+                            <img
+                                src={userData.identificationImageUrl}
+                                alt="Verified Identification"
+                                className="max-w-full h-auto rounded-lg border"
+                            />
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
