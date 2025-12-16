@@ -38,7 +38,7 @@ export default function LoginPage() {
             {/* Left Side - Image */}
             <div className="bg-muted relative hidden lg:block rounded-2xl overflow-hidden lg:col-span-2">
                 <img
-                    src="https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=2070&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1621985499238-698dfd45b017?q=80&w=1170&auto=format&fit=crop"
                     alt="Camera equipment"
                     className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.7]"
                 />
@@ -50,7 +50,7 @@ export default function LoginPage() {
                         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                             <FieldGroup>
                                 <div className="flex flex-col gap-1 text-center">
-                                    <h1 className="text-2xl font-bold">Welcome Back!</h1>
+                                    <h1 className="text-2xl font-bold">Welcome Back To KawanSewa!</h1>
                                     <p className="text-muted-foreground text-sm text-balance">
                                         Enter your credentials to access your account
                                     </p>

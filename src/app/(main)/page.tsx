@@ -17,19 +17,19 @@ import Link from "next/link";
 const PROMOTIONAL_SLIDES = [
   {
     id: 1,
-    image: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1200&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1618486073499-242493d8f3a1?q=80&w=1176&auto=format&fit=crop",
     title: "Professional Camera Rentals",
     description: "Rent the latest camera equipment for your next project",
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=1200&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1526063803516-3fd204f18b75?q=80&w=1170&auto=format&fit=crop",
     title: "Premium Lenses Available",
     description: "High-quality lenses for every photography need",
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1606800052890-c331f6d16d92?w=1200&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1688226423273-bc2f526795d5?q=80&w=1170&auto=format&fit=crop",
     title: "Affordable Daily Rates",
     description: "Get professional equipment at student-friendly prices",
   },

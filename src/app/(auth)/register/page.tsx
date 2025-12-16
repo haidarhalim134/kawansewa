@@ -38,7 +38,7 @@ export default function RegisterPage() {
             {/* Left Side - Image */}
             <div className="bg-muted relative hidden lg:block rounded-2xl overflow-hidden lg:col-span-2">
                 <img
-                    src="https://images.unsplash.com/photo-1502920917128-1aa500764cbd?q=80&w=2070&auto=format&fit=crop"
+                    src="https://plus.unsplash.com/premium_photo-1764502003082-06bb9dc6e607?q=80&w=687&auto=format&fit=crop"
                     alt="Camera equipment"
                     className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.7]"
                 />
