@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { items, itemImages, users, rentals, reviews } from "@/db/schema";
-import { eq, avg } from "drizzle-orm";
+import { eq, avg, isNull } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/cookies";
 
@@ -27,6 +27,7 @@ export async function GET() {
       .leftJoin(itemImages, eq(items.id, itemImages.itemId))
       .leftJoin(rentals, eq(items.id, rentals.itemId))
       .leftJoin(reviews, eq(rentals.id, reviews.rentalId))
+      .where(isNull(items.deletedAt))
       .groupBy(
         items.id,
         users.id,
@@ -66,8 +67,8 @@ export async function GET() {
     );
 
     // Optional: sort images by order
-    grouped.forEach((item) => {
-      item.images.sort((a: any, b: any) => a.order - b.order);
+    grouped.forEach((item: any) => {
+      item.images.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
     });
 
     return NextResponse.json(grouped);

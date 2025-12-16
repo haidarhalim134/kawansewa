@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { items, itemImages, rentals, reviews } from "@/db/schema";
-import { ilike, or, eq, avg } from "drizzle-orm";
+import { ilike, or, eq, avg, and, isNull } from "drizzle-orm";
 
 export async function GET(req: Request) {
   try {
@@ -27,7 +27,10 @@ export async function GET(req: Request) {
       .leftJoin(rentals, eq(items.id, rentals.itemId))
       .leftJoin(reviews, eq(rentals.id, reviews.rentalId))
       .where(
-        or(ilike(items.name, `%${term}%`), ilike(items.detail, `%${term}%`))
+        and(
+          or(ilike(items.name, `%${term}%`), ilike(items.detail, `%${term}%`)),
+          isNull(items.deletedAt)
+        )
       )
       .groupBy(items.id, items.name, items.detail, items.pricePerDay);
 
@@ -47,7 +50,7 @@ export async function GET(req: Request) {
       rating: item.avgRating ? Number(item.avgRating) : null,
       images: images
         .filter((img) => img.itemId === item.id)
-        .sort((a, b) => a.imageOrder - b.imageOrder)
+        .sort((a, b) => (a.imageOrder || 0) - (b.imageOrder || 0))
         .map((img) => ({ url: img.imageUrl, order: img.imageOrder })),
     }));
 

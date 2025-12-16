@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { items, itemImages, users, rentals, reviews } from "@/db/schema";
-import { eq, and, gte, lte, avg } from "drizzle-orm";
+import { eq, and, gte, lte, avg, isNull, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/cookies";
 import { supabase } from "@/lib/supabase";
@@ -41,7 +41,7 @@ export async function GET(
       .leftJoin(itemImages, eq(items.id, itemImages.itemId))
       .leftJoin(rentals, eq(items.id, rentals.itemId))
       .leftJoin(reviews, eq(rentals.id, reviews.rentalId))
-      .where(eq(items.id, itemId))
+      .where(and(eq(items.id, itemId), isNull(items.deletedAt)))
       .groupBy(
         items.id,
         users.id,
@@ -70,7 +70,7 @@ export async function GET(
       images: rows
         .filter((r) => r.imageUrl)
         .map((r) => ({ url: r.imageUrl, order: r.imageOrder }))
-        .sort((a, b) => a.order - b.order),
+        .sort((a, b) => (a.order || 0) - (b.order || 0)),
     };
 
     return NextResponse.json(item);
@@ -113,7 +113,7 @@ export async function PUT(
     const [item] = await db
       .select()
       .from(items)
-      .where(eq(items.id, itemId));
+      .where(and(eq(items.id, itemId), isNull(items.deletedAt)));
 
     if (!item) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 });
@@ -123,6 +123,14 @@ export async function PUT(
       return NextResponse.json(
         { error: "Unauthorized: This item does not belong to you" },
         { status: 403 }
+      );
+    }
+
+    // Check if item status allows editing
+    if (item.status === "unavailable" || item.status === "pending_rent") {
+      return NextResponse.json(
+        { error: `Cannot edit item with status: ${item.status}` },
+        { status: 400 }
       );
     }
 
@@ -196,7 +204,7 @@ export async function DELETE(
   context: { params: Promise<{ itemId: string }> }
 ) {
   try {
-    const user = await requireUser(); 
+    const user = await requireUser();
     const { params } = await context;
     const itemId = Number((await params).itemId);
 
@@ -207,7 +215,7 @@ export async function DELETE(
     const [item] = await db
       .select()
       .from(items)
-      .where(eq(items.id, itemId));
+      .where(and(eq(items.id, itemId), isNull(items.deletedAt)));
 
     if (!item) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 });
@@ -220,61 +228,34 @@ export async function DELETE(
       );
     }
 
-    const today = new Date().toISOString().split("T")[0];
-
-    const activeRentals = await db
+    // Check if item has active or pending rentals
+    const activeOrPendingRentals = await db
       .select()
       .from(rentals)
       .where(
         and(
           eq(rentals.itemId, itemId),
-          lte(rentals.startDate, today),
-          gte(rentals.endDate, today)
+          sql`${rentals.status} IN ('pending', 'approved', 'active')`
         )
       );
 
-    if (activeRentals.length > 0) {
+    if (activeOrPendingRentals.length > 0) {
       return NextResponse.json(
-        { error: "Item is actively rented and cannot be deleted" },
+        { error: "Cannot delete item with active or pending rentals" },
         { status: 400 }
       );
     }
 
-    const itemImgs = await db
-      .select()
-      .from(itemImages)
-      .where(eq(itemImages.itemId, itemId));
+    // Soft delete: set deletedAt timestamp
+    await db
+      .update(items)
+      .set({ deletedAt: new Date() })
+      .where(eq(items.id, itemId));
 
-    const storagePaths = itemImgs.map((img) => {
-      try {
-        const url = new URL(img.imageUrl);
-        const pathStart = url.pathname.indexOf("/product/"); 
-        return url.pathname.substring(pathStart + 1); 
-      } catch {
-        return null;
-      }
-    }).filter(Boolean) as string[];
-
-    if (storagePaths.length > 0) {
-      const { error: storageError } = await supabase.storage
-        .from("product") 
-        .remove(storagePaths);
-
-      if (storageError) {
-        console.error("Storage delete error:", storageError);
-        return NextResponse.json(
-          { error: "Failed to delete images from storage" },
-          { status: 500 }
-        );
-      }
-    }
-
-    await db.transaction(async (tx) => {
-      await tx.delete(itemImages).where(eq(itemImages.itemId, itemId));
-      await tx.delete(items).where(eq(items.id, itemId));
-    });
-
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      message: "Item deleted successfully"
+    }, { status: 200 });
   } catch (error: any) {
     console.error("Error deleting item:", error);
     return NextResponse.json(

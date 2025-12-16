@@ -47,6 +47,7 @@ export const items = pgTable("items", {
     pricePerDay: numeric("price_per_day", { precision: 10, scale: 2 }).notNull(),
 
     status: itemStatusEnum("status").notNull().default("available"),
+    deletedAt: timestamp("deleted_at", { mode: "date" }),
 });
 
 export const vouchers = pgTable("vouchers", {

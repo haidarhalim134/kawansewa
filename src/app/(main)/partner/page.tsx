@@ -3,22 +3,11 @@ import { getSession } from "@/lib/cookies";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-    Package,
-    Plus,
-    TrendingUp,
-    DollarSign,
-    Eye,
-    Edit,
-    Trash2,
-    Shield,
-    AlertCircle,
-    Banknote
-} from "lucide-react";
+import { Plus, Shield, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import PartnerHubContent from "@/components/PartnerHubContent";
 
 export default async function PartnerHubPage() {
     const session = await getSession();
@@ -88,141 +77,20 @@ export default async function PartnerHubPage() {
                 </Card>
             )}
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Dynamic Content */}
+            {isVerified ? (
+                <PartnerHubContent isVerified={isVerified} />
+            ) : (
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                        <p className="text-xs text-muted-foreground">Listed items</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Rentals</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                        <p className="text-xs text-muted-foreground">Currently rented</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-                        <Banknote className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">Rp0,00</div>
-                        <p className="text-xs text-muted-foreground">All time</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                        <p className="text-xs text-muted-foreground">Item views</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* My Items */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>My Items</CardTitle>
-                            <CardDescription>Manage your rental inventory</CardDescription>
+                    <CardContent className="pt-6">
+                        <div className="text-center py-12 text-gray-500">
+                            <Shield className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                            <p className="text-lg font-medium mb-2">Complete verification to access partner features</p>
+                            <p className="text-sm">Once verified, you'll be able to list items and track your earnings.</p>
                         </div>
-                        {isVerified && (
-                            <Link href="/items/create">
-                                <Button variant="outline" size="sm">
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Item
-                                </Button>
-                            </Link>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {/* Empty State */}
-                    <div className="text-center py-12">
-                        <Package className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No items listed yet</h3>
-                        <p className="text-gray-600 mb-6">
-                            {isVerified
-                                ? "Start earning by listing your camera gear for rent"
-                                : "Complete verification to start listing your items"
-                            }
-                        </p>
-                        {isVerified ? (
-                            <Link href="/items/create">
-                                <Button>
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    List Your First Item
-                                </Button>
-                            </Link>
-                        ) : (
-                            <Link href="/profile">
-                                <Button>
-                                    <Shield className="h-4 w-4 mr-2" />
-                                    Get Verified
-                                </Button>
-                            </Link>
-                        )}
-                    </div>
-
-                    {/* TODO: Items list will be displayed here when API is ready */}
-                    {/* Example item card structure (currently hidden):
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg">
-                            <img src="" alt="Item" className="w-20 h-20 object-cover rounded" />
-                            <div className="flex-1">
-                                <h4 className="font-semibold">Item Name</h4>
-                                <p className="text-sm text-gray-600">$25.00 per day</p>
-                                <Badge>Available</Badge>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
-                                    <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                    */}
-                </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>Latest rental requests and updates</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {/* Empty State */}
-                    <div className="text-center py-8 text-gray-500">
-                        <p className="text-sm">No recent activity</p>
-                    </div>
-
-                    {/* TODO: Activity list will be displayed here when API is ready */}
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }
