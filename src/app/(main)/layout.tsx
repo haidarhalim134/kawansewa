@@ -86,6 +86,13 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild>
+                                            <Link href="/partner" className="cursor-pointer">
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Partner Hub
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
                                             <Link href="/profile" className="cursor-pointer">
                                                 <User className="mr-2 h-4 w-4" />
                                                 Profile

@@ -15,15 +15,18 @@ import {
     Loader2,
     Calendar,
     User as UserIcon,
+    Bell,
 } from "lucide-react";
 import Link from "next/link";
 import DeleteItemButton from "@/components/DeleteItemButton";
+import { RentalApprovalCard } from "@/components/RentalApprovalCard";
 
 interface PartnerStats {
     totalItems: number;
     activeRentals: number;
     totalEarnings: number;
     totalViews: number;
+    pendingApprovals?: number;
 }
 
 interface PartnerItem {
@@ -50,15 +53,38 @@ interface Activity {
     itemImage: string | null;
 }
 
+interface PendingRental {
+    id: number;
+    status: string;
+    startDate: string;
+    endDate: string;
+    totalPrice: string;
+    depositHeld: string;
+    item: {
+        id: number;
+        name: string;
+        pricePerDay: string;
+        imageUrl: string | null;
+    };
+    renter: {
+        id: number;
+        name: string;
+        email: string;
+        profileImageUrl: string | null;
+    };
+}
+
 export default function PartnerHubContent({ isVerified }: { isVerified: boolean }) {
     const [stats, setStats] = useState<PartnerStats>({
         totalItems: 0,
         activeRentals: 0,
         totalEarnings: 0,
         totalViews: 0,
+        pendingApprovals: 0,
     });
     const [items, setItems] = useState<PartnerItem[]>([]);
     const [activity, setActivity] = useState<Activity[]>([]);
+    const [pendingRentals, setPendingRentals] = useState<PendingRental[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -74,30 +100,38 @@ export default function PartnerHubContent({ isVerified }: { isVerified: boolean 
 
         try {
             // Fetch all data in parallel
-            const [statsRes, itemsRes, activityRes] = await Promise.all([
+            const [statsRes, itemsRes, activityRes, pendingRes] = await Promise.all([
                 fetch("/api/partner/stats"),
                 fetch("/api/partner/items"),
                 fetch("/api/partner/activity"),
+                fetch("/api/rentals/pending"),
             ]);
 
-            if (!statsRes.ok || !itemsRes.ok || !activityRes.ok) {
+            if (!statsRes.ok || !itemsRes.ok || !activityRes.ok || !pendingRes.ok) {
                 throw new Error("Failed to fetch data");
             }
 
-            const [statsData, itemsData, activityData] = await Promise.all([
+            const [statsData, itemsData, activityData, pendingData] = await Promise.all([
                 statsRes.json(),
                 itemsRes.json(),
                 activityRes.json(),
+                pendingRes.json(),
             ]);
 
             setStats(statsData.stats);
             setItems(itemsData.items);
             setActivity(activityData.activity);
+            setPendingRentals(pendingData);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to load data");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRentalAction = () => {
+        // Refresh data after approve/reject
+        fetchData();
     };
 
     const getStatusBadge = (status: string) => {
@@ -163,6 +197,8 @@ export default function PartnerHubContent({ isVerified }: { isVerified: boolean 
 
     return (
         <>
+            {/* Pending Approvals Alert - Removed, now shown inline */}
+
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
@@ -209,6 +245,37 @@ export default function PartnerHubContent({ isVerified }: { isVerified: boolean 
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Pending Rental Approvals */}
+            {pendingRentals.length > 0 && (
+                <Card className="border-orange-200">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-orange-100 rounded-lg">
+                                    <Bell className="h-5 w-5 text-orange-600" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-orange-900">Pending Rental Requests</CardTitle>
+                                    <CardDescription>
+                                        {pendingRentals.length} request{pendingRentals.length > 1 ? "s" : ""} waiting for your approval
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {pendingRentals.map((rental) => (
+                            <RentalApprovalCard
+                                key={rental.id}
+                                rental={rental}
+                                onApprove={handleRentalAction}
+                                onReject={handleRentalAction}
+                            />
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
 
             {/* My Items */}
             <Card>

@@ -11,11 +11,12 @@ import { useRouter } from "next/navigation";
 interface CheckoutFormProps {
     itemId: number;
     pricePerDay: string;
+    depositAmount: string;
     ownerId: number;
     renterId: number;
 }
 
-export function CheckoutForm({ itemId, pricePerDay, ownerId, renterId }: CheckoutFormProps) {
+export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, renterId }: CheckoutFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,6 +34,7 @@ export function CheckoutForm({ itemId, pricePerDay, ownerId, renterId }: Checkou
     const [voucherError, setVoucherError] = useState("");
 
     const pricePerDayNum = parseFloat(pricePerDay);
+    const depositAmountNum = parseFloat(depositAmount) || 0;
 
     // Calculate rental duration and price
     useEffect(() => {
@@ -95,7 +97,7 @@ export function CheckoutForm({ itemId, pricePerDay, ownerId, renterId }: Checkou
         setVoucherError("");
     };
 
-    const total = Math.max(0, subtotal - discount);
+    const total = Math.max(0, subtotal - discount + depositAmountNum);
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("id-ID", {
@@ -135,6 +137,7 @@ export function CheckoutForm({ itemId, pricePerDay, ownerId, renterId }: Checkou
                     endDate,
                     voucherCode: voucherApplied ? voucherCode : null,
                     totalPrice: total,
+                    depositHeld: depositAmountNum,
                     paymentMethod,
                 }),
             });
@@ -345,6 +348,12 @@ export function CheckoutForm({ itemId, pricePerDay, ownerId, renterId }: Checkou
                                     <span className="font-medium">-{formatPrice(discount)}</span>
                                 </div>
                             )}
+                            {depositAmountNum > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Security Deposit</span>
+                                    <span className="font-medium">{formatPrice(depositAmountNum)}</span>
+                                </div>
+                            )}
                             <div className="border-t pt-3">
                                 <div className="flex justify-between">
                                     <span className="font-semibold text-lg">Total</span>
@@ -353,6 +362,13 @@ export function CheckoutForm({ itemId, pricePerDay, ownerId, renterId }: Checkou
                                     </span>
                                 </div>
                             </div>
+                            {depositAmountNum > 0 && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                                    <p className="text-xs text-blue-800">
+                                        💡 <strong>Deposit {formatPrice(depositAmountNum)}</strong> will be refunded to your account after the rental is completed successfully.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <Button

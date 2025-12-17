@@ -33,6 +33,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
             name: items.name,
             detail: items.detail,
             pricePerDay: items.pricePerDay,
+            depositAmount: items.depositAmount,
             ownerId: items.ownerId,
             ownerName: users.name,
             ownerLocation: users.location,
@@ -117,6 +118,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
                     <CheckoutForm
                         itemId={item.id}
                         pricePerDay={item.pricePerDay}
+                        depositAmount={item.depositAmount || "0"}
                         ownerId={item.ownerId}
                         renterId={parseInt(session.userId)}
                     />

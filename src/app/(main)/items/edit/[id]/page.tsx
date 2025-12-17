@@ -125,6 +125,7 @@ export default async function EditItemPage({ params }: PageProps) {
                             name: itemData.name,
                             detail: itemData.detail || "",
                             pricePerDay: itemData.pricePerDay,
+                            depositAmount: itemData.depositAmount || "0",
                             status: itemData.status,
                         }}
                         initialImages={images.map(img => img.imageUrl)}

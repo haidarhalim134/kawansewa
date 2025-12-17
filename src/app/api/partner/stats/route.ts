@@ -48,6 +48,21 @@ export async function GET(req: Request) {
     
     const totalEarnings = parseFloat(totalEarningsResult[0]?.total || "0");
 
+    // Get pending approvals count (exclude deleted items)
+    const pendingApprovalsResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(rentals)
+      .innerJoin(items, eq(rentals.itemId, items.id))
+      .where(
+        and(
+          eq(items.ownerId, user.id),
+          isNull(items.deletedAt),
+          eq(rentals.status, "pending")
+        )
+      );
+    
+    const pendingApprovals = pendingApprovalsResult[0]?.count || 0;
+
     // For now, we don't have a views tracking table, so return 0
     // TODO: Implement views tracking in the future
     const totalViews = 0;
@@ -59,6 +74,7 @@ export async function GET(req: Request) {
         activeRentals,
         totalEarnings,
         totalViews,
+        pendingApprovals,
       },
     });
   } catch (error: any) {

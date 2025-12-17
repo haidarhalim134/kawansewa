@@ -43,6 +43,13 @@
       "when": 1765905969350,
       "tag": "0005_stiff_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1765964272604,
+      "tag": "0006_illegal_alice",
+      "breakpoints": true
     }
   ]
 }

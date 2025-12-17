@@ -29,6 +29,7 @@ export async function GET(
         name: items.name,
         detail: items.detail,
         pricePerDay: items.pricePerDay,
+        depositAmount: items.depositAmount,
         ownerId: users.id,
         ownerName: users.name,
         ownerProfileImageUrl: users.profileImageUrl,
@@ -61,6 +62,7 @@ export async function GET(
       name: rows[0].name,
       detail: rows[0].detail,
       pricePerDay: rows[0].pricePerDay,
+      depositAmount: rows[0].depositAmount,
       owner: {
         id: rows[0].ownerId,
         name: rows[0].ownerName,
@@ -87,6 +89,7 @@ type EditItemBody = {
   name?: string;
   detail?: string;
   pricePerDay?: number;
+  depositAmount?: number;
   imageUrls?: string[];
 };
 
@@ -108,7 +111,7 @@ export async function PUT(
     }
 
     const body = (await req.json()) as EditItemBody;
-    const { name, detail, pricePerDay, imageUrls } = body;
+    const { name, detail, pricePerDay, depositAmount, imageUrls } = body;
 
     const [item] = await db
       .select()
@@ -158,7 +161,8 @@ export async function PUT(
       const updateData: any = {};
       if (name !== undefined) updateData.name = name;
       if (detail !== undefined) updateData.detail = detail;
-      if (pricePerDay !== undefined) updateData.pricePerDay = pricePerDay;
+      if (pricePerDay !== undefined) updateData.pricePerDay = pricePerDay.toString();
+      if (depositAmount !== undefined) updateData.depositAmount = depositAmount.toString();
 
       let resultItem = item;
 

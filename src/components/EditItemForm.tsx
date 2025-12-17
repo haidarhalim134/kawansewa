@@ -14,6 +14,7 @@ interface EditItemFormProps {
         name: string;
         detail: string;
         pricePerDay: string;
+        depositAmount: string;
         status: string;
     };
     initialImages: string[];
@@ -26,6 +27,7 @@ export default function EditItemForm({ itemId, initialData, initialImages, canEd
         name: initialData.name,
         detail: initialData.detail,
         pricePerDay: initialData.pricePerDay,
+        depositAmount: initialData.depositAmount,
     });
 
     // Track existing images (URLs from database)
@@ -146,6 +148,12 @@ export default function EditItemForm({ itemId, initialData, initialImages, canEd
             return;
         }
 
+        const depositAmount = formData.depositAmount ? parseFloat(formData.depositAmount) : 0;
+        if (isNaN(depositAmount) || depositAmount < 0) {
+            setError("Please enter a valid deposit amount");
+            return;
+        }
+
         const totalImages = existingImages.length + newImages.length;
         if (totalImages === 0) {
             setError("Please keep at least one image");
@@ -176,6 +184,7 @@ export default function EditItemForm({ itemId, initialData, initialImages, canEd
                     name: formData.name,
                     detail: formData.detail || undefined,
                     pricePerDay: pricePerDay,
+                    depositAmount: depositAmount,
                     imageUrls: allImageUrls,
                 }),
             });
@@ -262,6 +271,27 @@ export default function EditItemForm({ itemId, initialData, initialImages, canEd
                     disabled={!canEdit}
                     required
                 />
+            </div>
+
+            {/* Deposit Amount */}
+            <div className="space-y-2">
+                <Label htmlFor="depositAmount">
+                    Deposit Amount (Optional)
+                </Label>
+                <Input
+                    id="depositAmount"
+                    name="depositAmount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={formData.depositAmount}
+                    onChange={handleInputChange}
+                    disabled={!canEdit}
+                />
+                <p className="text-sm text-gray-500">
+                    💡 Security deposit will be held during rental and refunded after item is returned safely
+                </p>
             </div>
 
             {/* Image Management */}

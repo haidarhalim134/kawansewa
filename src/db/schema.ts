@@ -45,6 +45,7 @@ export const items = pgTable("items", {
     name: varchar("name", { length: 255 }).notNull(),
     detail: text("detail"),
     pricePerDay: numeric("price_per_day", { precision: 10, scale: 2 }).notNull(),
+    depositAmount: numeric("deposit_amount", { precision: 10, scale: 2 }).notNull().default("0"),
 
     status: itemStatusEnum("status").notNull().default("available"),
     deletedAt: timestamp("deleted_at", { mode: "date" }),
@@ -57,12 +58,12 @@ export const vouchers = pgTable("vouchers", {
 });
 
 export const rentalStatusEnum = pgEnum("rental_status", [
-    "pending",
-    "approved",
-    "rejected",
-    "active",
-    "completed",
-    "canceled",
+    "pending",           // Waiting Approval from Owner
+    "approved",          // Approved, Waiting Payment
+    "rejected",          // Rejected by Owner
+    "active",            // Payment Done, Item Rented
+    "completed",         // Rental Completed, Item Returned
+    "canceled",          // Canceled by Renter
 ]);
 
 export const rentals = pgTable("rentals", {
@@ -77,6 +78,7 @@ export const rentals = pgTable("rentals", {
         .references(() => vouchers.id, { onDelete: "set null" }),
 
     totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
+    depositHeld: numeric("deposit_held", { precision: 10, scale: 2 }).notNull().default("0"),
     startDate: date("start_date").notNull(),
     endDate: date("end_date").notNull(),
 

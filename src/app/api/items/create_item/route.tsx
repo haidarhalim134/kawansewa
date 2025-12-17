@@ -8,6 +8,7 @@ type CreateItemBody = {
   name: string;
   detail?: string;
   pricePerDay: number;
+  depositAmount?: number;
   imageUrls?: string[]; 
 };
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     const user = await requireUser();
 
     const body = (await req.json()) as CreateItemBody;
-    const { name, detail, pricePerDay, imageUrls = [] } = body;
+    const { name, detail, pricePerDay, depositAmount = 0, imageUrls = [] } = body;
 
     if (!name || !pricePerDay) {
       return NextResponse.json(
@@ -39,7 +40,8 @@ export async function POST(req: Request) {
           ownerId: user.id,
           name,
           detail,
-          pricePerDay,
+          pricePerDay: pricePerDay.toString(),
+          depositAmount: depositAmount.toString(),
         })
         .returning();
 

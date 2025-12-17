@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { rentals, items, vouchers, userStatus } from "@/db/schema";
+import { rentals, items, vouchers, userStatus, notifications } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { itemId, voucherCode, startDate, endDate, totalPrice: clientTotalPrice, paymentMethod } = body;
+    const { itemId, voucherCode, startDate, endDate, totalPrice: clientTotalPrice, depositHeld, paymentMethod } = body;
 
     if (!itemId || !startDate || !endDate) {
       return NextResponse.json(
@@ -51,6 +51,7 @@ export async function POST(req: Request) {
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     let totalPrice = Number(item.pricePerDay) * diffDays;
+    const depositAmount = Number(item.depositAmount) || 0;
 
     let voucherId: number | null = null;
     if (voucherCode) {
@@ -62,6 +63,9 @@ export async function POST(req: Request) {
         totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
       }
     }
+
+    // Add deposit to total price
+    totalPrice += depositAmount;
 
     // Verify client-side total matches server-side calculation
     if (clientTotalPrice !== undefined && Math.abs(clientTotalPrice - totalPrice) > 0.01) {
@@ -79,10 +83,19 @@ export async function POST(req: Request) {
         renterId,
         voucherId,
         totalPrice: totalPrice.toString(),
+        depositHeld: depositAmount.toString(),
         startDate: startDate, // Use original string format
         endDate: endDate, // Use original string format
       })
       .returning();
+
+    // Create notification for owner
+    await db.insert(notifications).values({
+      userId: item.ownerId,
+      title: "New Rental Request",
+      description: `You have a new rental request for "${item.name}". Please review and approve or reject it.`,
+      targetUrl: `/partner/approvals`,
+    });
 
     return NextResponse.json(
       {

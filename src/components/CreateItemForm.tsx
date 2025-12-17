@@ -14,6 +14,7 @@ export default function CreateItemForm() {
         name: "",
         detail: "",
         pricePerDay: "",
+        depositAmount: "",
     });
     const [images, setImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -113,6 +114,12 @@ export default function CreateItemForm() {
             return;
         }
 
+        const depositAmount = formData.depositAmount ? parseFloat(formData.depositAmount) : 0;
+        if (isNaN(depositAmount) || depositAmount < 0) {
+            setError("Please enter a valid deposit amount");
+            return;
+        }
+
         if (images.length === 0) {
             setError("Please upload at least one image");
             return;
@@ -136,6 +143,7 @@ export default function CreateItemForm() {
                     name: formData.name,
                     detail: formData.detail || undefined,
                     pricePerDay: pricePerDay,
+                    depositAmount: depositAmount,
                     imageUrls: imageUrls,
                 }),
             });
@@ -207,6 +215,26 @@ export default function CreateItemForm() {
                     onChange={handleInputChange}
                     required
                 />
+            </div>
+
+            {/* Deposit Amount */}
+            <div className="space-y-2">
+                <Label htmlFor="depositAmount">
+                    Deposit Amount (Optional)
+                </Label>
+                <Input
+                    id="depositAmount"
+                    name="depositAmount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={formData.depositAmount}
+                    onChange={handleInputChange}
+                />
+                <p className="text-sm text-gray-500">
+                    💡 Security deposit will be held during rental and refunded after item is returned safely
+                </p>
             </div>
 
             {/* Image Upload */}
