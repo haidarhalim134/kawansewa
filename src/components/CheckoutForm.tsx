@@ -269,8 +269,8 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                     <div className="space-y-3">
                         <label
                             className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === "credit_card"
-                                    ? "border-blue-500 bg-blue-50"
-                                    : "border-gray-200 hover:border-gray-300"
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-gray-300"
                                 }`}
                         >
                             <input
@@ -287,8 +287,8 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
 
                         <label
                             className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === "e_wallet"
-                                    ? "border-blue-500 bg-blue-50"
-                                    : "border-gray-200 hover:border-gray-300"
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-gray-300"
                                 }`}
                         >
                             <input
@@ -305,8 +305,8 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
 
                         <label
                             className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === "bank_transfer"
-                                    ? "border-blue-500 bg-blue-50"
-                                    : "border-gray-200 hover:border-gray-300"
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-gray-300"
                                 }`}
                         >
                             <input

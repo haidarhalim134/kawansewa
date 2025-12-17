@@ -9,7 +9,7 @@ type CreateItemBody = {
   detail?: string;
   pricePerDay: number;
   depositAmount?: number;
-  imageUrls?: string[]; 
+  imageUrls?: string[];
 };
 
 export async function POST(req: Request) {

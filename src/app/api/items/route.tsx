@@ -20,7 +20,7 @@ export async function GET() {
         ownerProfileImageUrl: users.profileImageUrl,
         imageUrl: itemImages.imageUrl,
         imageOrder: itemImages.imageOrder,
-        avgRating: avg(reviews.star).as("avgRating"), 
+        avgRating: avg(reviews.star).as("avgRating"),
       })
       .from(items)
       .leftJoin(users, eq(items.ownerId, users.id))
