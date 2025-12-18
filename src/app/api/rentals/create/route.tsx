@@ -60,6 +60,11 @@ export async function POST(req: Request) {
       if (voucher) {
         voucherId = voucher.id;
         totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
+      } else {
+        return NextResponse.json(
+          { error: "Voucher not found." },
+          { status: 404 }
+        );
       }
     }
 
