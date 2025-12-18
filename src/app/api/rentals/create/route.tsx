@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { rentals, items, vouchers, userStatus } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
 
 export async function POST(req: Request) {
@@ -46,6 +46,22 @@ export async function POST(req: Request) {
     const end = new Date(endDate);
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
       return NextResponse.json({ error: "Invalid rental date range." }, { status: 400 });
+    }
+
+    const conflictingRental = await db.query.rentals.findFirst({
+      where: and(
+        eq(rentals.itemId, itemId),
+        inArray(rentals.status, ["pending", "approved", "active"]),
+        lte(rentals.startDate, endDate),
+        gte(rentals.endDate, startDate)
+      ),
+    });
+    
+    if (conflictingRental) {
+      return NextResponse.json(
+        { error: "Item is already rented for the selected dates." },
+        { status: 409 }
+      );
     }
 
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
