@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { rentals, items, vouchers, userStatus, notifications } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { rentals, items, vouchers, userStatus } from "@/db/schema";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
 
 export async function POST(req: Request) {
@@ -48,6 +48,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid rental date range." }, { status: 400 });
     }
 
+    const conflictingRental = await db.query.rentals.findFirst({
+      where: and(
+        eq(rentals.itemId, itemId),
+        inArray(rentals.status, ["pending", "approved", "active"]),
+        lte(rentals.startDate, endDate),
+        gte(rentals.endDate, startDate)
+      ),
+    });
+
+    if (conflictingRental) {
+      return NextResponse.json(
+        { error: "Item is already rented for the selected dates." },
+        { status: 409 }
+      );
+    }
+
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     let totalPrice = Number(item.pricePerDay) * diffDays;
@@ -61,6 +77,11 @@ export async function POST(req: Request) {
       if (voucher) {
         voucherId = voucher.id;
         totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
+      } else {
+        return NextResponse.json(
+          { error: "Voucher not found." },
+          { status: 404 }
+        );
       }
     }
 

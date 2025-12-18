@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { reviews, rentals } from "@/db/schema";
+import { reviews, rentals, rentalStatusEnum } from "@/db/schema";
 import { requireUser } from "@/lib/cookies";
 
 interface RateItemBody {
@@ -46,7 +46,7 @@ export async function POST(req: Request, { params }: { params: { itemId: string 
     const now = new Date();
     const rentalEnd = new Date(rental.endDate);
 
-    if (rentalEnd > now) {
+    if (rentalEnd > now && rental.status == rentalStatusEnum.enumValues[4]) {
       return NextResponse.json({ error: "You can only rate an item after the rental has ended" }, { status: 400 });
     }
 

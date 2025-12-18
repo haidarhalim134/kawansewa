@@ -34,7 +34,7 @@ export const users = pgTable("users", {
 export const itemStatusEnum = pgEnum("item_status", [
     "available",
     "unavailable",
-    "pending_rent",
+    "pending_rent", // unused? soalnya belum tentu habis bayar langsung ambil
 ]);
 
 export const items = pgTable("items", {
@@ -58,12 +58,13 @@ export const vouchers = pgTable("vouchers", {
 });
 
 export const rentalStatusEnum = pgEnum("rental_status", [
-    "pending",           // Waiting Approval from Owner
-    "approved",          // Approved, Waiting Payment
-    "rejected",          // Rejected by Owner
-    "active",            // Payment Done, Item Rented
-    "completed",         // Rental Completed, Item Returned
-    "canceled",          // Canceled by Renter
+    "pending", // waiting approval
+    "approved", // waiting payment
+    "rejected", // unused == canceled
+    "active", // on rent
+    "completed",
+    "canceled",
+    "paid" // siap ambil
 ]);
 
 export const rentals = pgTable("rentals", {
