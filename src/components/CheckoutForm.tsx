@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Calendar, CreditCard, Wallet, Building2, Tag, CheckCircle2 } from "lucide-react";
+import { Calendar, Tag, CheckCircle2, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface CheckoutFormProps {
@@ -24,7 +24,6 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [voucherCode, setVoucherCode] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState<"credit_card" | "e_wallet" | "bank_transfer">("credit_card");
 
     // Calculated state
     const [totalDays, setTotalDays] = useState(0);
@@ -138,17 +137,16 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                     voucherCode: voucherApplied ? voucherCode : null,
                     totalPrice: total,
                     depositHeld: depositAmountNum,
-                    paymentMethod,
                 }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                // Redirect to success page or rental details
-                router.push(`/profile/rentals?success=true`);
+                // Redirect to rental history with success message
+                router.push(`/profile/rentals?success=true&message=rental_request_submitted`);
             } else {
-                alert(data.error || "Failed to create rental");
+                alert(data.error || "Failed to submit rental request");
                 setIsSubmitting(false);
             }
         } catch (error) {
@@ -258,75 +256,45 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                 </Card>
             </div>
 
-            {/* Right Column - Payment Method & Summary */}
+            {/* Right Column - Rental Request Info & Summary */}
             <div className="space-y-6">
-                {/* Payment Method */}
+                {/* Rental Request Information */}
                 <Card className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        Payment Method
+                        <Info className="h-5 w-5" />
+                        Rental Request Process
                     </h2>
-                    <div className="space-y-3">
-                        <label
-                            className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === "credit_card"
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                                }`}
-                        >
-                            <input
-                                type="radio"
-                                name="paymentMethod"
-                                value="credit_card"
-                                checked={paymentMethod === "credit_card"}
-                                onChange={(e) => setPaymentMethod(e.target.value as any)}
-                                className="w-4 h-4"
-                            />
-                            <CreditCard className="h-5 w-5 text-gray-600" />
-                            <span className="font-medium">Credit/Debit Card</span>
-                        </label>
-
-                        <label
-                            className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === "e_wallet"
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                                }`}
-                        >
-                            <input
-                                type="radio"
-                                name="paymentMethod"
-                                value="e_wallet"
-                                checked={paymentMethod === "e_wallet"}
-                                onChange={(e) => setPaymentMethod(e.target.value as any)}
-                                className="w-4 h-4"
-                            />
-                            <Wallet className="h-5 w-5 text-gray-600" />
-                            <span className="font-medium">E-Wallet (GoPay, OVO, Dana)</span>
-                        </label>
-
-                        <label
-                            className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === "bank_transfer"
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                                }`}
-                        >
-                            <input
-                                type="radio"
-                                name="paymentMethod"
-                                value="bank_transfer"
-                                checked={paymentMethod === "bank_transfer"}
-                                onChange={(e) => setPaymentMethod(e.target.value as any)}
-                                className="w-4 h-4"
-                            />
-                            <Building2 className="h-5 w-5 text-gray-600" />
-                            <span className="font-medium">Bank Transfer</span>
-                        </label>
+                    <div className="space-y-3 text-sm text-gray-700">
+                        <div className="flex items-start gap-3">
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs shrink-0 mt-0.5">
+                                1
+                            </div>
+                            <p>You submit a rental request to the item owner</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs shrink-0 mt-0.5">
+                                2
+                            </div>
+                            <p>The owner reviews and can approve or reject your request</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs shrink-0 mt-0.5">
+                                3
+                            </div>
+                            <p>If approved, you can proceed with payment through your rental history</p>
+                        </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-800">
+                            ⚠️ <strong>Note:</strong> Your request will be marked as "Pending" until the owner responds.
+                        </p>
                     </div>
                 </Card>
 
                 {/* Transaction Summary - Sticky */}
                 <div className="lg:sticky lg:top-24">
                     <Card className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">Transaction Summary</h2>
+                        <h2 className="text-xl font-semibold mb-4">Rental Summary</h2>
                         <div className="space-y-3">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Price per day</span>
@@ -356,7 +324,7 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                             )}
                             <div className="border-t pt-3">
                                 <div className="flex justify-between">
-                                    <span className="font-semibold text-lg">Total</span>
+                                    <span className="font-semibold text-lg">Estimated Total</span>
                                     <span className="font-bold text-xl text-blue-600">
                                         {formatPrice(total)}
                                     </span>
@@ -365,7 +333,7 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                             {depositAmountNum > 0 && (
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                                     <p className="text-xs text-blue-800">
-                                        💡 <strong>Deposit {formatPrice(depositAmountNum)}</strong> will be refunded to your account after the rental is completed successfully.
+                                        💡 <strong>Deposit {formatPrice(depositAmountNum)}</strong> will be refunded after the rental is completed successfully.
                                     </p>
                                 </div>
                             )}
@@ -377,11 +345,11 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                             size="lg"
                             disabled={isSubmitting || totalDays <= 0}
                         >
-                            {isSubmitting ? "Processing..." : "Pay Now"}
+                            {isSubmitting ? "Submitting..." : "Submit Rental Request"}
                         </Button>
 
                         <p className="text-xs text-gray-500 text-center mt-4">
-                            By proceeding, you agree to our Terms of Service and Privacy Policy
+                            Payment will be processed after the owner approves your request
                         </p>
                     </Card>
                 </div>

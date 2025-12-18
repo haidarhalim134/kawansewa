@@ -80,13 +80,16 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
                         <ArrowLeft className="h-4 w-4" />
                         Back to item details
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 mt-4">Checkout</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mt-4">Submit Rental Request</h1>
+                    <p className="text-gray-600 mt-2">
+                        Fill in the rental details below. The owner will review your request before you can proceed with payment.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-8">
                     {/* Item Details Card */}
                     <div className="bg-white rounded-lg border p-6">
-                        <h2 className="text-xl font-semibold mb-4">Item Details</h2>
+                        <h2 className="text-xl font-semibold mb-4">Item You're Requesting</h2>
                         <div className="flex gap-4">
                             <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
                                 <Image

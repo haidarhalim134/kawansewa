@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { items, itemImages, users, reviews, rentals } from "@/db/schema";
-import { eq, and, avg, count, ilike, or } from "drizzle-orm";
+import { eq, and, avg, count, ilike, or, isNull } from "drizzle-orm";
 import { ItemCard } from "@/components/ItemCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,16 +33,27 @@ export default async function ItemsSearchPage({ searchParams }: SearchPageProps)
         .innerJoin(users, eq(items.ownerId, users.id))
         .leftJoin(
             itemImages,
-            and(eq(itemImages.itemId, items.id), eq(itemImages.imageOrder, 1))
+            and(eq(itemImages.itemId, items.id), eq(itemImages.imageOrder, 0))
         )
         .$dynamic();
 
     // Apply search filter if query exists
     if (searchQuery) {
         itemsQuery = itemsQuery.where(
-            or(
-                ilike(items.name, `%${searchQuery}%`),
-                ilike(items.detail, `%${searchQuery}%`)
+            and(
+                or(
+                    ilike(items.name, `%${searchQuery}%`),
+                    ilike(items.detail, `%${searchQuery}%`)
+                ),
+                isNull(items.deletedAt),
+                eq(items.status, "available")
+            )
+        );
+    } else {
+        itemsQuery = itemsQuery.where(
+            and(
+                isNull(items.deletedAt),
+                eq(items.status, "available")
             )
         );
     }
@@ -57,9 +68,20 @@ export default async function ItemsSearchPage({ searchParams }: SearchPageProps)
     let finalCountQuery = countQuery;
     if (searchQuery) {
         finalCountQuery = finalCountQuery.where(
-            or(
-                ilike(items.name, `%${searchQuery}%`),
-                ilike(items.detail, `%${searchQuery}%`)
+            and(
+                or(
+                    ilike(items.name, `%${searchQuery}%`),
+                    ilike(items.detail, `%${searchQuery}%`)
+                ),
+                isNull(items.deletedAt),
+                eq(items.status, "available")
+            )
+        );
+    } else {
+        finalCountQuery = finalCountQuery.where(
+            and(
+                isNull(items.deletedAt),
+                eq(items.status, "available")
             )
         );
     }

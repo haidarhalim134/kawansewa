@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { rentals, items, notifications, users } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
 
 /**
@@ -59,11 +59,32 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update rental status to approved
-    await db
-      .update(rentals)
-      .set({ status: "approved" })
-      .where(eq(rentals.id, rentalId));
+    // Update rental status to approved and item status to pending_rent
+    await db.transaction(async (tx) => {
+      // Update rental status
+      await tx
+        .update(rentals)
+        .set({ status: "approved" })
+        .where(eq(rentals.id, rentalId));
+
+      // Update item status to pending_rent (waiting for payment)
+      await tx
+        .update(items)
+        .set({ status: "pending_rent" })
+        .where(eq(items.id, rental.itemId));
+
+      // Reject all other pending rentals for the same item
+      await tx
+        .update(rentals)
+        .set({ status: "rejected" })
+        .where(
+          and(
+            eq(rentals.itemId, rental.itemId),
+            eq(rentals.status, "pending"),
+            ne(rentals.id, rentalId) // Don't reject the current rental
+          )
+        );
+    });
 
     // Create notification for renter
     await db.insert(notifications).values({
