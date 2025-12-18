@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const rentId = searchParams.get("rentId");
+export async function GET(
+  req: Request, 
+  context: { params: Promise<{ rentId: string }> }
+) {
+  const { params } = await context;
+  const rentId = Number((await params).rentId);
 
   try {
     // Generate a data URL containing the QR code
