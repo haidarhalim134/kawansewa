@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { rentals, items, vouchers, userStatus } from "@/db/schema";
+import { rentals, items, vouchers, userStatus, notifications, voucherUsed } from "@/db/schema";
 import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
+import { validateVoucherForUser } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -70,19 +71,22 @@ export async function POST(req: Request) {
     const depositAmount = Number(item.depositAmount) || 0;
 
     let voucherId: number | null = null;
+
     if (voucherCode) {
-      const voucher = await db.query.vouchers.findFirst({
-        where: eq(vouchers.code, voucherCode.toUpperCase()),
+      const [valid, voucher] = await validateVoucherForUser({
+        code: voucherCode.toUpperCase(),
+        userId: renterId,
       });
-      if (voucher) {
-        voucherId = voucher.id;
-        totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
-      } else {
+    
+      if (!valid) {
         return NextResponse.json(
-          { error: "Voucher not found." },
-          { status: 404 }
+          { error: voucher },
+          { status: 400 }
         );
       }
+    
+      voucherId = voucher.id;
+      totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
     }
 
     // Add deposit to total price
@@ -96,31 +100,40 @@ export async function POST(req: Request) {
       );
     }
 
-    // Insert rental
-    const [newRental] = await db
-      .insert(rentals)
-      .values({
-        itemId,
-        renterId,
-        voucherId,
-        totalPrice: totalPrice.toString(),
-        depositHeld: depositAmount.toString(),
-        startDate: startDate, // Use original string format
-        endDate: endDate, // Use original string format
-      })
-      .returning();
+    const result = await db.transaction(async (tx) => {
+      const [newRental] = await tx
+        .insert(rentals)
+        .values({
+          itemId,
+          renterId,
+          voucherId,
+          totalPrice: totalPrice.toString(),
+          depositHeld: depositAmount.toString(),
+          startDate,
+          endDate,
+        })
+        .returning();
+    
+      if (voucherId) {
+        await tx.insert(voucherUsed).values({
+          voucherId,
+          userId: renterId,
+        });
+      }
+    
+      await tx.insert(notifications).values({
+        userId: item.ownerId,
+        title: "New Rental Request",
+        description: `You have a new rental request for "${item.name}". Please review and approve or reject it.`,
+        targetUrl: `/partner/approvals`,
+      });
 
-    // Create notification for owner
-    await db.insert(notifications).values({
-      userId: item.ownerId,
-      title: "New Rental Request",
-      description: `You have a new rental request for "${item.name}". Please review and approve or reject it.`,
-      targetUrl: `/partner/approvals`,
+      return newRental;
     });
 
     return NextResponse.json(
       {
-        rental: newRental,
+        rental: result,
         message: "Rental created successfully",
         paymentMethod: paymentMethod || "not_specified"
       },
