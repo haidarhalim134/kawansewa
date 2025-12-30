@@ -50,6 +50,13 @@
       "when": 1765964272604,
       "tag": "0006_illegal_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1767102897881,
+      "tag": "0007_early_radioactive_man",
+      "breakpoints": true
     }
   ]
 }
