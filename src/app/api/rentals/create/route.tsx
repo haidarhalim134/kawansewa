@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { rentals, items, vouchers, userStatus, notifications, voucherUsed } from "@/db/schema";
 import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { requireUser } from "@/lib/cookies";
-import { validateVoucherForUser } from "@/lib/utils";
+import { validateVoucherForUser } from "@/lib/serverUtils";
 
 export async function POST(req: Request) {
   try {

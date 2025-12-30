@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/cookies";
-import { validateVoucherForUser } from "@/lib/utils";
+import { validateVoucherForUser } from "@/lib/serverUtils";
 
 export async function POST(request: NextRequest) {
     try {
