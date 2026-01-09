@@ -3,9 +3,11 @@ import { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import {
   LayoutDashboard,
+  LogOut,
   TicketPercent,
   Users,
 } from "lucide-react"
+import { logout } from "@/app/actions/auth"
 
 export default function AdminLayout({
   children,
@@ -54,9 +56,12 @@ export default function AdminLayout({
             Admin Dashboard
           </span>
 
-          <Button variant="outline" size="sm">
-            Logout
-          </Button>
+          <form action={logout}>
+              <button type="submit" className="flex w-full items-center cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+              </button>
+          </form>
         </header>
 
         {/* Page content */}
