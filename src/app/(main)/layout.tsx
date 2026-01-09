@@ -51,10 +51,10 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                         {session ? (
                             <>
                                 {/* Bell Icon - Notifications */}
-                                <Button variant="ghost" size="icon" className="relative">
+                                {/* <Button variant="ghost" size="icon" className="relative">
                                     <Bell className="h-5 w-5" />
                                     <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                                </Button>
+                                </Button> */}
 
                                 {/* Profile Dropdown */}
                                 <DropdownMenu>
@@ -77,13 +77,6 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                                                 </p>
                                             </div>
                                         </DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/partner" className="cursor-pointer">
-                                                <Plus className="mr-2 h-4 w-4" />
-                                                Partner Hub
-                                            </Link>
-                                        </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild>
                                             <Link href="/partner" className="cursor-pointer">

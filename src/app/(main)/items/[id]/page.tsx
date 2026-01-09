@@ -266,7 +266,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                                     pricePerDay={ownerItem.pricePerDay}
                                     imageUrl={
                                         ownerItem.firstImage ||
-                                        "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800"
+                                        "https://placehold.co/800x600/e2e8f0/64748b?text=No+Image"
                                     }
                                     ownerLocation={ownerItem.ownerLocation || "Unknown"}
                                     averageRating={ownerItem.rating}
