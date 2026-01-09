@@ -16,6 +16,7 @@ export async function GET(req: Request) {
         startDate: rentals.startDate,
         endDate: rentals.endDate,
         totalPrice: rentals.totalPrice,
+        depositHeld: rentals.depositHeld,
         itemId: items.id,
         itemName: items.name,
         renterId: users.id,

@@ -206,6 +206,7 @@ export default async function OwnerRentalsPage() {
                                                 rentalId={rental.id}
                                                 itemName={rental.itemName}
                                                 renterName={rental.renterName || "Unknown"}
+                                                depositAmount={rental.depositHeld}
                                             />
                                             <p className="text-xs text-gray-500">
                                                 Click this button after the renter returns the item

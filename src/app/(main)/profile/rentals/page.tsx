@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmReceivedButton } from "@/components/ConfirmReceivedButton";
+import { PayNowButton } from "@/components/PayNowButton";
 import { History, Calendar, CreditCard, Clock, CheckCircle, XCircle, Star, Package } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -201,10 +202,11 @@ export default async function RentalHistoryPage() {
                                         {/* Action Buttons */}
                                         {rental.status === "approved" && (
                                             <div className="mt-4 flex items-center gap-3">
-                                                <Button size="sm" className="gap-2">
-                                                    <CreditCard className="h-4 w-4" />
-                                                    Pay Now
-                                                </Button>
+                                                <PayNowButton
+                                                    rentalId={rental.id}
+                                                    totalAmount={rental.totalPrice}
+                                                    itemName={rental.itemName}
+                                                />
                                                 <p className="text-xs text-gray-500">
                                                     Complete payment to activate your rental
                                                 </p>

@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 
 interface RateItemBody {
   star: number;
-  itemId: number;  
+  itemId: number;
 }
 
 export async function POST(
@@ -19,12 +19,15 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { params } = await context;
-    const rentId = Number((await params).rentId);
+    const params = await context.params;
+    const rentId = Number(params.rentId);
 
     const body: RateItemBody = await req.json();
 
+    console.log("Rating request:", { rentId, userId: user.id, star: body.star, itemId: body.itemId });
+
     if (body.star < 1 || body.star > 5) {
+      console.log("Invalid star rating:", body.star);
       return NextResponse.json(
         { error: "Star rating must be between 1 and 5" },
         { status: 400 }
@@ -34,30 +37,44 @@ export async function POST(
     const rows = await db
       .select()
       .from(rentals)
-      .where(
-        eq(rentals.id, rentId)   
-      );
+      .where(eq(rentals.id, rentId));
 
     if (rows.length === 0) {
-      return NextResponse.json({ error: "rental not found" }, { status: 404 });
+      return NextResponse.json({ error: "Rental not found" }, { status: 404 });
     }
 
     const rental = rows[0];
 
-    if (!rental) {
+    console.log("Rental found:", { rentalId: rental.id, renterId: rental.renterId, status: rental.status });
+
+    // Verify the user is the renter
+    if (rental.renterId !== user.id) {
+      console.log("Unauthorized: user is not renter", { userId: user.id, renterId: rental.renterId });
       return NextResponse.json(
-        { error: "Rental not found or does not belong to user" },
-        { status: 404 }
+        { error: "Unauthorized - You are not the renter of this rental" },
+        { status: 403 }
       );
     }
 
-    // Ensure rental has ended
-    const now = new Date();
-    const rentalEnd = new Date(rental.endDate);
-
-    if (rentalEnd > now && rental.status == rentalStatusEnum.enumValues[4]) {
+    // Ensure rental is completed
+    if (rental.status !== "completed") {
+      console.log("Rental not completed:", rental.status);
       return NextResponse.json(
-        { error: "You can only rate an item after the rental has ended" },
+        { error: "You can only rate an item after the rental is completed" },
+        { status: 400 }
+      );
+    }
+
+    // Check if review already exists
+    const existingReview = await db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.rentalId, rentId))
+      .limit(1);
+
+    if (existingReview.length > 0) {
+      return NextResponse.json(
+        { error: "You have already rated this rental" },
         { status: 400 }
       );
     }

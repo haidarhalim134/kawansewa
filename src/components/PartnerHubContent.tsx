@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import {
 import Link from "next/link";
 import DeleteItemButton from "@/components/DeleteItemButton";
 import { RentalApprovalCard } from "@/components/RentalApprovalCard";
+import { ConfirmReturnedButton } from "@/components/ConfirmReturnedButton";
 
 interface PartnerStats {
     totalItems: number;
@@ -44,6 +46,7 @@ interface Activity {
     startDate: string;
     endDate: string;
     totalPrice: string;
+    depositHeld: string;
     itemId: number;
     itemName: string;
     renterId: number;
@@ -75,6 +78,7 @@ interface PendingRental {
 }
 
 export default function PartnerHubContent({ isVerified }: { isVerified: boolean }) {
+    const router = useRouter();
     const [stats, setStats] = useState<PartnerStats>({
         totalItems: 0,
         activeRentals: 0,
@@ -381,7 +385,7 @@ export default function PartnerHubContent({ isVerified }: { isVerified: boolean 
                                             </div>
                                             {getRentalStatusBadge(act.rentalStatus)}
                                         </div>
-                                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                                             <div className="flex items-center gap-1">
                                                 <Calendar className="h-4 w-4" />
                                                 {formatDate(act.startDate)} - {formatDate(act.endDate)}
@@ -390,6 +394,21 @@ export default function PartnerHubContent({ isVerified }: { isVerified: boolean 
                                                 {formatCurrency(act.totalPrice)}
                                             </div>
                                         </div>
+
+                                        {/* Action Button for Active Rentals */}
+                                        {act.rentalStatus === "active" && (
+                                            <div className="flex items-center gap-3">
+                                                <ConfirmReturnedButton
+                                                    rentalId={act.rentalId}
+                                                    itemName={act.itemName}
+                                                    renterName={act.renterName || "Unknown"}
+                                                    depositAmount={act.depositHeld}
+                                                />
+                                                <p className="text-xs text-gray-500">
+                                                    Confirm when item is returned
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
