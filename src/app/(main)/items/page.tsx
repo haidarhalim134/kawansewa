@@ -182,7 +182,7 @@ export default async function ItemsSearchPage({ searchParams }: SearchPageProps)
                                 pricePerDay={item.pricePerDay}
                                 imageUrl={
                                     item.firstImage ||
-                                    "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800"
+                                    "https://placehold.co/800x600/e2e8f0/64748b?text=No+Image"
                                 }
                                 ownerLocation={item.ownerLocation || "Unknown"}
                                 averageRating={item.rating}

@@ -13,7 +13,7 @@ export function ImageGallery({ images, itemName }: ImageGalleryProps) {
 
     const mainImage = images[selectedImage] || images[0];
     const fallbackImage =
-        "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800";
+        "https://placehold.co/800x600/e2e8f0/64748b?text=No+Image";
 
     return (
         <div className="space-y-4">
@@ -36,8 +36,8 @@ export function ImageGallery({ images, itemName }: ImageGalleryProps) {
                             key={image.id}
                             onClick={() => setSelectedImage(index)}
                             className={`aspect-video relative rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
-                                    ? "border-blue-500 ring-2 ring-blue-200"
-                                    : "border-gray-200 hover:border-gray-300"
+                                ? "border-blue-500 ring-2 ring-blue-200"
+                                : "border-gray-200 hover:border-gray-300"
                                 }`}
                         >
                             <Image

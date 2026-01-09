@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { History, Calendar, CreditCard, Clock, CheckCircle, XCircle, Star } from "lucide-react";
+import { ConfirmReceivedButton } from "@/components/ConfirmReceivedButton";
+import { History, Calendar, CreditCard, Clock, CheckCircle, XCircle, Star, Package } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import RatingDialog from "@/components/RatingDialog";
@@ -78,8 +79,13 @@ export default async function RentalHistoryPage() {
                 variant: "default",
                 icon: <CheckCircle className="h-3 w-3" />,
             },
+            paid: {
+                label: "Paid - Waiting COD",
+                variant: "default",
+                icon: <Package className="h-3 w-3" />,
+            },
             active: {
-                label: "Active Rental",
+                label: "On Rent",
                 variant: "default",
                 icon: <CheckCircle className="h-3 w-3" />,
             },
@@ -148,7 +154,7 @@ export default async function RentalHistoryPage() {
                                     {/* Item Image */}
                                     <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
                                         <Image
-                                            src={rental.firstImage || "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800"}
+                                            src={rental.firstImage || "https://placehold.co/800x600/e2e8f0/64748b?text=No+Image"}
                                             alt={rental.itemName}
                                             fill
                                             className="object-cover"
@@ -205,6 +211,30 @@ export default async function RentalHistoryPage() {
                                             </div>
                                         )}
 
+                                        {rental.status === "paid" && (
+                                            <div className="mt-4 flex flex-col gap-2">
+                                                <div className="flex items-center gap-3">
+                                                    <ConfirmReceivedButton
+                                                        rentalId={rental.id}
+                                                        itemName={rental.itemName}
+                                                    />
+                                                    <p className="text-xs text-gray-500">
+                                                        Click this button after you receive the item via COD
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {rental.status === "active" && (
+                                            <div className="mt-4">
+                                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                                    <p className="text-sm text-green-800">
+                                                        ✅ Rental is active. Enjoy using the item!
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {rental.status === "pending" && (
                                             <div className="mt-4">
                                                 <p className="text-xs text-gray-500">
@@ -219,7 +249,7 @@ export default async function RentalHistoryPage() {
                                                     <div className="flex items-center gap-1">
                                                         <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                                                         <span className="font-semibold">
-                                                        {rental.reviewStar}
+                                                            {rental.reviewStar}
                                                         </span>
                                                     </div>
                                                 ) : (

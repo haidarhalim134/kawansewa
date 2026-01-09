@@ -57,7 +57,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         .orderBy(itemImages.imageOrder)
         .limit(1);
 
-    const firstImage = images[0]?.imageUrl || "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800";
+    const firstImage = images[0]?.imageUrl || "https://placehold.co/800x600/e2e8f0/64748b?text=No+Image";
 
     // Format price
     const formatPrice = (price: string) => {

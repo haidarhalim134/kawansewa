@@ -220,6 +220,11 @@ export default function PartnerHubContent({ isVerified }: { isVerified: boolean 
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.activeRentals}</div>
                         <p className="text-xs text-muted-foreground">Currently rented</p>
+                        <Link href="/partner/rentals">
+                            <Button variant="link" size="sm" className="mt-2 p-0 h-auto text-xs">
+                                Manage Rentals →
+                            </Button>
+                        </Link>
                     </CardContent>
                 </Card>
 
