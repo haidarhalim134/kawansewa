@@ -45,7 +45,8 @@ export async function POST(req: Request) {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
-    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+    // Allow same-day rentals (start === end) for 1-day rentals
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
       return NextResponse.json({ error: "Invalid rental date range." }, { status: 400 });
     }
 
@@ -65,7 +66,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    // Calculate days: same day = 1 day, next day = 2 days, etc.
+    // Must match frontend calculation logic
+    const diffDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     let totalPrice = Number(item.pricePerDay) * diffDays;
     const depositAmount = Number(item.depositAmount) || 0;
@@ -77,16 +80,18 @@ export async function POST(req: Request) {
         code: voucherCode.toUpperCase(),
         userId: renterId,
       });
-    
+
       if (!valid) {
         return NextResponse.json(
           { error: voucher },
           { status: 400 }
         );
       }
-    
-      voucherId = voucher.id;
-      totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
+
+      if (typeof voucher === 'object' && voucher !== null) {
+        voucherId = voucher.id;
+        totalPrice = Math.max(0, totalPrice - Number(voucher.discountAmount));
+      }
     }
 
     // Add deposit to total price
@@ -113,14 +118,14 @@ export async function POST(req: Request) {
           endDate,
         })
         .returning();
-    
+
       if (voucherId) {
         await tx.insert(voucherUsed).values({
           voucherId,
           userId: renterId,
         });
       }
-    
+
       await tx.insert(notifications).values({
         userId: item.ownerId,
         title: "New Rental Request",

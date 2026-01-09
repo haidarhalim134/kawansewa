@@ -40,16 +40,23 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
         if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
-            const diffTime = end.getTime() - start.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end date
 
-            if (diffDays > 0) {
-                setTotalDays(diffDays);
-                setSubtotal(pricePerDayNum * diffDays);
-            } else {
+            // Check if end date is before start date
+            if (end < start) {
                 setTotalDays(0);
                 setSubtotal(0);
+                return;
             }
+
+            const diffTime = end.getTime() - start.getTime();
+
+            // Calculate days: same day = 1 day, next day = 2 days, etc.
+            // diffTime in milliseconds / (1000 * 60 * 60 * 24) = days difference
+            // Add 1 to include both start and end date
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            setTotalDays(diffDays);
+            setSubtotal(pricePerDayNum * diffDays);
         } else {
             setTotalDays(0);
             setSubtotal(0);
@@ -114,8 +121,8 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
             return;
         }
 
-        if (totalDays <= 0) {
-            alert("End date must be after start date");
+        if (totalDays < 1) {
+            alert("Invalid date range. End date cannot be before start date.");
             return;
         }
 
@@ -196,6 +203,13 @@ export function CheckoutForm({ itemId, pricePerDay, depositAmount, ownerId, rent
                         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-sm text-blue-900">
                                 <span className="font-semibold">Duration:</span> {totalDays} day{totalDays > 1 ? "s" : ""}
+                            </p>
+                        </div>
+                    )}
+                    {startDate && endDate && totalDays === 0 && (
+                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-900">
+                                <span className="font-semibold">Invalid date range:</span> End date cannot be before start date
                             </p>
                         </div>
                     )}
