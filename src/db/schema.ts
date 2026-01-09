@@ -10,6 +10,7 @@ import {
     primaryKey,
     uniqueIndex,
     pgEnum,
+    boolean,
 } from "drizzle-orm/pg-core";
 
 export const userStatus = pgEnum("user_status", [
@@ -27,6 +28,7 @@ export const users = pgTable("users", {
     profileImageUrl: varchar("profile_image_url", { length: 1024 }),
     identificationImageUrl: varchar("identification_image_url", { length: 1024 }),
     status: userStatus("status").notNull().default("unverified"),
+    isAdmin: boolean("is_admin").notNull().default(false),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
