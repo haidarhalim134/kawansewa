@@ -10,6 +10,7 @@ import {
     primaryKey,
     uniqueIndex,
     pgEnum,
+    boolean,
 } from "drizzle-orm/pg-core";
 
 export const userStatus = pgEnum("user_status", [
@@ -27,6 +28,7 @@ export const users = pgTable("users", {
     profileImageUrl: varchar("profile_image_url", { length: 1024 }),
     identificationImageUrl: varchar("identification_image_url", { length: 1024 }),
     status: userStatus("status").notNull().default("unverified"),
+    isAdmin: boolean("is_admin").notNull().default(false),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -52,10 +54,42 @@ export const items = pgTable("items", {
 });
 
 export const vouchers = pgTable("vouchers", {
-    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+
     code: varchar("code", { length: 50 }).notNull().unique(),
-    discountAmount: numeric("discount_amount", { precision: 10, scale: 2 }).notNull(),
+
+    discountAmount: numeric("discount_amount", {
+        precision: 10,
+        scale: 2,
+    }).notNull(),
+
+    maxUsage: integer("max_usage").notNull().default(0), // batas total pemakaian, 0 == unlimited
+
+    startDate: date("start_date").notNull(),
+    endDate: date("end_date").notNull(),
+
+    isActive: integer("is_active").notNull().default(1), // 1 = aktif, 0 = nonaktif
 });
+
+export const voucherUsed = pgTable(
+    "voucher_used",
+    {
+        voucherId: integer("voucher_id")
+            .notNull()
+            .references(() => vouchers.id, { onDelete: "cascade" }),
+
+        userId: integer("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+
+        usedAt: timestamp("used_at").defaultNow().notNull(),
+    },
+    (table) => [
+        primaryKey({
+            columns: [table.voucherId, table.userId],
+        }),
+    ]
+);
 
 export const rentalStatusEnum = pgEnum("rental_status", [
     "pending", // waiting approval

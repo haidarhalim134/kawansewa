@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { users, reviews, rentals, items } from "@/db/schema";
+import { eq, avg, count } from "drizzle-orm";
 import { getSession } from "@/lib/cookies";
 import { redirect } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MapPin, Calendar, Edit, Shield, Upload, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Mail, MapPin, Calendar, Edit, Shield, Upload, CheckCircle, Clock, XCircle, Star } from "lucide-react";
 import IdentificationUpload from "@/components/IdentificationUpload";
 
 export default async function ProfilePage() {
@@ -30,6 +30,23 @@ export default async function ProfilePage() {
     if (!userData) {
         redirect("/login");
     }
+
+    // query owner rating data, adjust to calculate own avg rating
+    const ownerRatingData = await db
+        .select({
+            avgRating: avg(reviews.star),
+            totalReviews: count(reviews.id),
+        })
+        .from(reviews)
+        .innerJoin(rentals, eq(reviews.rentalId, rentals.id))
+        .innerJoin(items, eq(rentals.itemId, items.id))
+        .where(eq(items.ownerId, userId));
+
+    const ownerAvgRating = ownerRatingData[0]?.avgRating
+        ? Number(ownerRatingData[0].avgRating)
+        : 0;
+
+    const ownerTotalReviews = ownerRatingData[0]?.totalReviews ?? 0;
 
     // Format date
     const formatDate = (date: Date) => {
@@ -96,14 +113,25 @@ export default async function ProfilePage() {
                                 {userData.name?.charAt(0).toUpperCase() || userData.email.charAt(0).toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
+                        <div className="flex-1 space-y-1">
                             <h2 className="text-2xl font-bold text-gray-900">
                                 {userData.name || "No name set"}
                             </h2>
-                            <div className="flex items-center gap-2 mt-1">
-                                <p className="text-gray-600">Member since {formatDate(userData.createdAt)}</p>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 text-sm text-gray-700">
+                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-medium">
+                                        {ownerAvgRating.toFixed(1)}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        ({ownerTotalReviews})
+                                    </span>
+                                </div>
                                 {getStatusBadge(userData.status)}
                             </div>
+                            <p className="text-gray-600 text-sm">
+                                Member since {formatDate(userData.createdAt)}
+                            </p>
                         </div>
                     </div>
 

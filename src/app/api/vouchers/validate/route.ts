@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { vouchers } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { requireUser } from "@/lib/cookies";
+import { validateVoucherForUser } from "@/lib/serverUtils";
 
 export async function POST(request: NextRequest) {
     try {
@@ -14,26 +13,24 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find voucher by code
-        const voucherData = await db
-            .select()
-            .from(vouchers)
-            .where(eq(vouchers.code, code.toUpperCase()))
-            .limit(1);
+        const user = await requireUser();
 
-        if (voucherData.length === 0) {
+        const [valid, voucher] = await validateVoucherForUser({
+            code: code.toUpperCase(),
+            userId: user.id,
+        });
+
+        if (!valid) {
             return NextResponse.json(
-                { error: "Invalid voucher code", valid: false },
-                { status: 404 }
+                { error: `Voucher cannot be used. ${voucher}`, valid: false },
+                { status: 400 }
             );
         }
 
-        const voucher = voucherData[0];
-
         return NextResponse.json({
             valid: true,
-            discountAmount: voucher.discountAmount,
             code: voucher.code,
+            discountAmount: voucher.discountAmount,
         });
     } catch (error) {
         console.error("Voucher validation error:", error);

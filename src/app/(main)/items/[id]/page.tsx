@@ -128,6 +128,22 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
         })
     );
 
+    const ownerRatingData = await db
+        .select({
+            avgRating: avg(reviews.star),
+            totalReviews: count(reviews.id),
+        })
+        .from(reviews)
+        .innerJoin(rentals, eq(reviews.rentalId, rentals.id))
+        .innerJoin(items, eq(rentals.itemId, items.id))
+        .where(eq(items.ownerId, item.ownerId));
+
+    const ownerAvgRating = ownerRatingData[0]?.avgRating
+        ? parseFloat(ownerRatingData[0].avgRating)
+        : 0;
+
+    const ownerTotalReviews = ownerRatingData[0]?.totalReviews || 0;
+
     // Format price
     const formatPrice = (price: string) => {
         return new Intl.NumberFormat("id-ID", {
@@ -194,6 +210,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                             <h3 className="text-sm font-medium text-gray-500 mb-4">
                                 Rented by
                             </h3>
+
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-16 w-16">
                                     <AvatarImage src={item.ownerProfileImage || undefined} />
@@ -201,11 +218,32 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                                         {item.ownerName?.charAt(0).toUpperCase() || "U"}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-lg">{item.ownerName}</h4>
-                                    <div className="flex items-center gap-1 text-gray-600 text-sm">
-                                        <MapPin className="h-4 w-4" />
-                                        <span>{item.ownerLocation}</span>
+                                
+                                <div className="flex flex-col">
+                                    <div className="flex-1">
+                                        <h4 className="font-semibold text-lg">
+                                            {item.ownerName}
+                                        </h4>
+
+                                        <div className="flex items-center gap-1 text-gray-600 text-sm">
+                                            <MapPin className="h-4 w-4" />
+                                            <span>{item.ownerLocation}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            <span className="text-sm font-medium">
+                                                {ownerAvgRating > 0
+                                                    ? ownerAvgRating.toFixed(1)
+                                                    : "No reviews yet"}
+                                            </span>
+
+                                            {ownerTotalReviews > 0 && (
+                                                <span className="text-xs text-gray-500">
+                                                    ({ownerTotalReviews} reviews)
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
