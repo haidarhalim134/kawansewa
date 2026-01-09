@@ -1,14 +1,15 @@
 import { db } from "@/db";
-import { rentals, items, itemImages, users, vouchers } from "@/db/schema";
+import { rentals, items, itemImages, users, vouchers, reviews } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { getSession } from "@/lib/cookies";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { History, Calendar, CreditCard, Clock, CheckCircle, XCircle } from "lucide-react";
+import { History, Calendar, CreditCard, Clock, CheckCircle, XCircle, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import RatingDialog from "@/components/RatingDialog";
 
 export default async function RentalHistoryPage() {
     const session = await getSession();
@@ -34,11 +35,14 @@ export default async function RentalHistoryPage() {
             ownerId: items.ownerId,
             ownerName: users.name,
             firstImage: itemImages.imageUrl,
+            reviewId: reviews.id,
+            reviewStar: reviews.star,
         })
         .from(rentals)
         .innerJoin(items, eq(rentals.itemId, items.id))
         .innerJoin(users, eq(items.ownerId, users.id))
         .leftJoin(vouchers, eq(rentals.voucherId, vouchers.id))
+        .leftJoin(reviews, eq(reviews.rentalId, rentals.id))
         .leftJoin(
             itemImages,
             and(eq(itemImages.itemId, items.id), eq(itemImages.imageOrder, 0))
@@ -206,6 +210,21 @@ export default async function RentalHistoryPage() {
                                                 <p className="text-xs text-gray-500">
                                                     Waiting for owner approval. You'll receive a notification once they respond.
                                                 </p>
+                                            </div>
+                                        )}
+
+                                        {rental.status === "completed" && (
+                                            <div className="mt-4 flex items-center gap-3">
+                                                {rental.reviewId ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                                                        <span className="font-semibold">
+                                                        {rental.reviewStar}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <RatingDialog rentalId={rental.id} itemId={rental.itemId} />
+                                                )}
                                             </div>
                                         )}
                                     </div>
